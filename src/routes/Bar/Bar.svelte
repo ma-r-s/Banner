@@ -30,7 +30,8 @@
 			>Registrarse</Button
 		>
 	{:else}
-		<Button href="/logout" class="hidden sm:block" variant="link">Log Out</Button>
+		<Button href="/pensum" variant="link">Editar Pensum</Button>
+		<Button href="/logout" variant="link">Log Out</Button>
 		<Button class="hidden sm:flex" variant="ghost" size="icon">
 			<CircleUserRound class="size-4" />
 		</Button>
