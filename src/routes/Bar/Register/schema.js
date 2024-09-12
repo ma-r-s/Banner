@@ -1,30 +1,30 @@
-import { email, maxLength, minLength, object, string, custom, forward, literal } from 'valibot';
-import moment from 'moment';
-export const formSchema = object(
-	{
-		name: string([
-			minLength(1, 'Please enter your name.'),
-			maxLength(100, 'Your name must have 100 characters or less.')
-		]),
-		email: string([email('Please enter a correct email.')]),
-		password: string([minLength(8, 'Your password must have 8 characters or more.')]),
-		username: string([
-			minLength(1, 'Please enter your username.'),
-			maxLength(50, 'Your username must have 50 characters or less.')
-		]),
-		passwordConfirm: string(),
-		dob: string([
-			custom(
-				(dob) => moment().subtract(18, 'years').isAfter(moment(dob)),
-				'You must be at least 18 to register'
-			)
-		]),
-		terms: literal(true)
-	},
-	[
-		forward(
-			custom((data) => data.password === data.passwordConfirm, "Passwords don't match"),
-			['passwordConfirm']
-		)
-	]
+import * as v from 'valibot';
+export const registerSchema = v.pipe(
+	v.object({
+		name: v.pipe(
+			v.string('Tu nombre debe ser un string.'),
+			v.nonEmpty('Por favor, ingresa tu nombre.'),
+			v.minLength(5, 'Tu nombre debe tener al menos 5 caracteres.')
+		),
+		email: v.pipe(
+			v.string('Tu correo debe ser un string.'),
+			v.nonEmpty('Por favor, ingresa tu correo.'),
+			v.email('Ingresa un correo válido.'),
+			v.endsWith('@uniandes.edu.co', 'Ingresa un correo Uniandes válido.')
+		),
+		password: v.pipe(
+			v.string('Tu contraseña debe ser un string.'),
+			v.nonEmpty('Por favor, ingresa tu contraseña.'),
+			v.minLength(8, 'Tu contraseña debe tener al menos 8 caracteres.')
+		),
+		passwordConfirm: v.string()
+	}),
+	v.forward(
+		v.partialCheck(
+			[['password'], ['passwordConfirm']],
+			(input) => input.password === input.passwordConfirm,
+			'Las contraseñas no coinciden.'
+		),
+		['passwordConfirm']
+	)
 );

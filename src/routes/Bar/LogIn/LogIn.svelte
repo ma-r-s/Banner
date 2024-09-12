@@ -10,10 +10,14 @@
 	import { LoaderCircle } from 'lucide-svelte';
 	// import SuperDebug from 'sveltekit-superforms';
 	export let data;
-	const form = superForm(data.form, {
+	export let dialogOpen;
+	const form = superForm(data.loginForm, {
 		validators: valibotClient(loginSchema),
 		onError: ({ result }) => {
 			toast.error(result.error.message);
+		},
+		onResult: ({ result }) => {
+			if (result.status === 303) dialogOpen = false;
 		}
 	});
 
@@ -23,7 +27,7 @@
 <Dialog.Header>
 	<Dialog.Title>Inicia sesíon</Dialog.Title>
 </Dialog.Header>
-<form method="POST" class="space-y-4" use:enhance>
+<form method="POST" action="?/login" class="space-y-4" use:enhance>
 	<Form.Field {form} name="email">
 		<Form.Control let:attrs>
 			<Form.Label>Correo</Form.Label>

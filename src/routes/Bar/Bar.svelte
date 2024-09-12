@@ -30,7 +30,7 @@
 			>Registrarse</Button
 		>
 	{:else}
-		<Button class="hidden sm:block" variant="link">Log Out</Button>
+		<Button href="/logout" class="hidden sm:block" variant="link">Log Out</Button>
 		<Button class="hidden sm:flex" variant="ghost" size="icon">
 			<CircleUserRound class="size-4" />
 		</Button>
@@ -45,9 +45,9 @@
 		<Dialog.Content class="sm:max-w-[425px]">
 			<!-- Conditionally Render Form -->
 			{#if currentForm === 'login'}
-				<LogIn {data} />
+				<LogIn {data} bind:dialogOpen />
 			{:else}
-				<Register {data} />
+				<Register {data} bind:dialogOpen />
 			{/if}
 
 			<Dialog.Footer>
