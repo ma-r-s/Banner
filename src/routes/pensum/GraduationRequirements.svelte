@@ -1,11 +1,14 @@
+<!-- src/routes/pensum/GraduationRequirements.svelte -->
 <script>
+	export let requirements = []; // This will be passed from +page.svelte
+
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import RequisiteGroup from './RequisiteGroup.svelte';
 
-	let requirementGroups = [];
+	let requirementGroups = requirements;
 	let newGroupType = '';
 	let newGroupDescription = '';
 	let open;
@@ -39,22 +42,11 @@
 		console.log(json);
 	};
 
-	// Function to import requirement groups from a JSON file
-	const importJson = (event) => {
-		const file = event.target.files[0];
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			const json = JSON.parse(e.target.result);
-			requirementGroups = json;
-		};
-		reader.readAsText(file);
-	};
+	// Since we no longer import from file, no need for the importJson function
 </script>
 
 <!-- Graduation Requirements Section -->
 <div class="space-y-4">
-	<Input class="max-w-80" type="file" on:change={importJson} />
-
 	<!-- List of requirement groups -->
 	{#each requirementGroups as group, index}
 		<RequisiteGroup {group} on:delete={() => deleteGroup(index)} />
