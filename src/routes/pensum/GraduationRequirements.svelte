@@ -1,12 +1,12 @@
-<!-- src/routes/pensum/GraduationRequirements.svelte -->
 <script>
-	export let requirements = []; // This will be passed from +page.svelte
-
+	export let requirements;
+	export let programId;
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import RequisiteGroup from './RequisiteGroup.svelte';
+	import { toast } from 'svelte-sonner';
 
 	let requirementGroups = requirements;
 	let newGroupType = '';
@@ -36,13 +36,33 @@
 		requirementGroups = requirementGroups.filter((_, i) => i !== index);
 	};
 
-	// Function to export requirement groups as JSON
-	const exportToJson = () => {
-		const json = JSON.stringify(requirementGroups, null, 2);
-		console.log(json);
-	};
+	// Function to save requirements
+	const saveRequirements = async () => {
+		try {
+			const response = await fetch('/pensum', {
+				method: 'POST',
 
-	// Since we no longer import from file, no need for the importJson function
+				body: JSON.stringify({
+					requirements: JSON.parse(JSON.stringify(requirementGroups), null, 2),
+					programId
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to save the updated requirements');
+			}
+
+			// Show success toast after successful save
+			toast.success('Requisitos guardados exitosamente', {
+				description: 'Los requisitos del programa han sido actualizados correctamente.'
+			});
+		} catch (error) {
+			console.error(error);
+			toast.error('Error al guardar los requisitos', {
+				description: 'No se pudieron guardar los requisitos, intenta nuevamente.'
+			});
+		}
+	};
 </script>
 
 <!-- Graduation Requirements Section -->
@@ -83,7 +103,9 @@
 			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>
+
+	<!-- Save Button with Toast -->
 	<div>
-		<Button on:click={exportToJson}>Export JSON</Button>
+		<Button on:click={saveRequirements}>Guardar Requisitos</Button>
 	</div>
 </div>

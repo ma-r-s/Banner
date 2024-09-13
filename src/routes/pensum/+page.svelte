@@ -64,7 +64,7 @@
 				>
 					{selectedDepartment
 						? data.departments.find((d) => d.id === selectedDepartment)?.name
-						: 'Select a department'}
+						: 'Elige un Departamento'}
 					<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</Popover.Trigger>
@@ -102,7 +102,7 @@
 	{#if selectedDepartment}
 		{#if filteredPrograms.length > 0}
 			<div class="mb-4">
-				<label for="program" class="mb-2 block">Select Program</label>
+				<label for="program" class="mb-2 block">Programa</label>
 				<Popover.Root bind:open={openProgram} let:ids>
 					<Popover.Trigger asChild let:builder>
 						<Button
@@ -114,7 +114,7 @@
 						>
 							{selectedProgram
 								? filteredPrograms.find((p) => p.id === selectedProgram)?.name
-								: 'Select a program'}
+								: 'Elige un program'}
 							<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 						</Button>
 					</Popover.Trigger>
@@ -154,5 +154,5 @@
 
 <!-- Pass the selected program's requirements to GraduationRequirements -->
 {#if selectedProgramRequirements}
-	<GraduationRequirements requirements={selectedProgramRequirements} />
+	<GraduationRequirements requirements={selectedProgramRequirements} programId={selectedProgram} />
 {/if}
