@@ -3,20 +3,29 @@
 	export let data;
 
 	import GraduationRequirements from './GraduationRequirements.svelte';
-	import * as Select from '$lib/components/ui/select/index.js';
+	import Check from 'lucide-svelte/icons/check';
+	import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
+	import * as Command from '$lib/components/ui/command/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { tick } from 'svelte';
+	import { cn } from '$lib/utils.js';
 
-	let selectedDepartment;
-	let selectedProgram = '';
+	let selectedDepartment = null;
+	let selectedProgram = null;
 	let selectedProgramRequirements = null;
+
+	let openDepartment = false;
+	let openProgram = false;
+
 	// Filter programs based on the selected department
-	$: filteredPrograms = data.programs.filter(
-		(program) => program.department_id === selectedDepartment?.value
-	);
+	$: filteredPrograms = selectedDepartment
+		? data.programs.filter((program) => program.department_id === selectedDepartment)
+		: [];
 
 	// Update the graduation requirements once a program is selected
 	$: {
-		const programId = selectedProgram.value;
-
+		const programId = selectedProgram;
 		const program = data.programs.find((p) => p.id === programId);
 		if (program) {
 			selectedProgramRequirements = program.requirements; // Assume requirements is a JSON field
@@ -25,57 +34,120 @@
 		}
 	}
 
+	// Clean previous program selection
 	let cleanOld = () => {
 		selectedProgramRequirements = null;
-		selectedProgram = '';
+		selectedProgram = null;
 	};
+
+	// Focus the trigger after selecting an item
+	function closeAndFocusTrigger(triggerId) {
+		tick().then(() => {
+			document.getElementById(triggerId)?.focus();
+		});
+	}
 </script>
 
 <h1 class="mb-4 text-2xl font-bold">Requisitos de Grado</h1>
-<div class="flex">
-	<!-- Department Selector -->
+<div class="flex items-center space-x-4">
+	<!-- Department ComboBox -->
 	<div class="mb-4">
 		<label for="department" class="mb-2 block">Departamento</label>
-		<Select.Root bind:selected={selectedDepartment} onSelectedChange={cleanOld}>
-			<Select.Trigger class="w-[180px]">
-				<Select.Value placeholder="Departamento" />
-			</Select.Trigger>
-			<Select.Content>
-				<Select.Group>
-					<Select.Label>Departments</Select.Label>
-					{#each data.departments as department}
-						<Select.Item value={department.id} label={department.name}>
-							{department.name}
-						</Select.Item>
-					{/each}
-				</Select.Group>
-			</Select.Content>
-		</Select.Root>
+		<Popover.Root bind:open={openDepartment} let:ids>
+			<Popover.Trigger asChild let:builder>
+				<Button
+					builders={[builder]}
+					variant="outline"
+					role="combobox"
+					aria-expanded={openDepartment}
+					class="w-[200px] justify-between"
+				>
+					{selectedDepartment
+						? data.departments.find((d) => d.id === selectedDepartment)?.name
+						: 'Select a department'}
+					<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+				</Button>
+			</Popover.Trigger>
+			<Popover.Content class="w-[200px] p-0">
+				<Command.Root>
+					<Command.Input placeholder="Search department..." />
+					<Command.Empty>No department found.</Command.Empty>
+					<Command.Group>
+						{#each data.departments as department}
+							<Command.Item
+								value={department.id}
+								onSelect={() => {
+									selectedDepartment = department.id;
+									cleanOld();
+									closeAndFocusTrigger(ids.trigger);
+									openDepartment = false;
+								}}
+							>
+								<Check
+									class={cn(
+										'mr-2 h-4 w-4',
+										selectedDepartment !== department.id && 'text-transparent'
+									)}
+								/>
+								{department.name}
+							</Command.Item>
+						{/each}
+					</Command.Group>
+				</Command.Root>
+			</Popover.Content>
+		</Popover.Root>
 	</div>
 
-	<!-- Program Selector -->
+	<!-- Program ComboBox -->
 	{#if selectedDepartment}
 		{#if filteredPrograms.length > 0}
 			<div class="mb-4">
 				<label for="program" class="mb-2 block">Select Program</label>
-				<Select.Root bind:selected={selectedProgram}>
-					<Select.Trigger class="w-[180px]">
-						<Select.Value placeholder="Select a program" />
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Group>
-							<Select.Label>Programs</Select.Label>
-							{#each filteredPrograms as program}
-								<Select.Item value={program.id} label={program.name}>
-									{program.name}
-								</Select.Item>
-							{/each}
-						</Select.Group>
-					</Select.Content>
-				</Select.Root>
+				<Popover.Root bind:open={openProgram} let:ids>
+					<Popover.Trigger asChild let:builder>
+						<Button
+							builders={[builder]}
+							variant="outline"
+							role="combobox"
+							aria-expanded={openProgram}
+							class="w-[200px] justify-between"
+						>
+							{selectedProgram
+								? filteredPrograms.find((p) => p.id === selectedProgram)?.name
+								: 'Select a program'}
+							<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+						</Button>
+					</Popover.Trigger>
+					<Popover.Content class="w-[200px] p-0">
+						<Command.Root>
+							<Command.Input placeholder="Search program..." />
+							<Command.Empty>No program found.</Command.Empty>
+							<Command.Group>
+								{#each filteredPrograms as program}
+									<Command.Item
+										value={program.id}
+										onSelect={() => {
+											selectedProgram = program.id;
+											closeAndFocusTrigger(ids.trigger);
+											openProgram = false;
+										}}
+									>
+										<Check
+											class={cn(
+												'mr-2 h-4 w-4',
+												selectedProgram !== program.id && 'text-transparent'
+											)}
+										/>
+										{program.name}
+									</Command.Item>
+								{/each}
+							</Command.Group>
+						</Command.Root>
+					</Popover.Content>
+				</Popover.Root>
 			</div>
 		{:else}
-			<p>No programs found for the selected department.</p>
+			<p class="mt-3">No programs found for the selected department.</p>
 		{/if}
 	{/if}
 </div>
