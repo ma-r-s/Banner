@@ -12,7 +12,7 @@ export async function handle({ event, resolve }) {
 	} catch (event) {
 		console.error('Auth refresh failed:', event);
 		// clear the auth store on failed refresh
-		event.locals.pb.authStore.clear();
+		event.locals?.pb?.authStore?.clear();
 	}
 	if (event.locals.pb.authStore.isValid) {
 		event.locals.user = structuredClone(event.locals.pb.authStore.model);

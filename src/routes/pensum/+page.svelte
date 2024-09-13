@@ -114,7 +114,7 @@
 						>
 							{selectedProgram
 								? filteredPrograms.find((p) => p.id === selectedProgram)?.name
-								: 'Elige un program'}
+								: 'Elige un programa'}
 							<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 						</Button>
 					</Popover.Trigger>
