@@ -1,0 +1,21 @@
+[
+	{
+		"type": "CBUs",
+		"description": "Requisitos de CBUs.",
+		"requisites": [
+			{ "data": { "CBU": 3 }, "rule": "must", "name": "CBU Name" },
+			{ "data": { "CBCA": 1 }, "rule": "must", "name": "CBCA" },
+			{ "data": { "CBCO": 1 }, "rule": "must", "name": "CBCO" },
+			{ "data": { "CBPC": 1 }, "rule": "must", "name": "CBPC" }
+		]
+	},
+	{
+		"type": "Electivas Profesionales",
+		"description": "Requisitos de Electivas",
+		"requisites": [
+			{ "data": { "ELEPRO": 12 }, "rule": "bags", "name": "Electivas profesionales" },
+			{ "data": { "ELEING": 6 }, "rule": "bags", "name": "Electivas en ingeniería" },
+			{ "data": { "ELECI": 6 }, "rule": "bags", "name": "Electivas en ciencia" }
+		]
+	}
+]
