@@ -78,9 +78,7 @@
 	const { hiddenColumnIds } = pluginStates.hide;
 	const { selectedDataIds } = pluginStates.select;
 	const ids = flatColumns.map((col) => col.id);
-	let hideForId = Object.fromEntries(
-		ids.map((id) => [id, !['name', 'credits', 'level'].includes(id)])
-	);
+	let hideForId = Object.fromEntries(ids.map((id) => [id, !['nivel'].includes(id)]));
 
 	// When selected courses change, dispatch an event to notify the parent component
 	$: {
@@ -94,7 +92,7 @@
 	$: $hiddenColumnIds = Object.entries(hideForId)
 		.filter(([, hide]) => !hide)
 		.map(([id]) => id);
-	const hidableCols = ['name', 'credits', 'level'];
+	const hidableCols = ['nombre', 'creditos', 'nivel'];
 </script>
 
 <div class="flex items-center py-4">
