@@ -3,24 +3,38 @@
 	import RequisiteTable from './RequisiteTable.svelte';
 	import { assign } from '$lib/opt.js';
 	import requisitos from '$lib/data/requisitos.json';
+	export let data;
 
-	let courses = [];
+	let selectedCourses = [];
 	let mapping, credits, unused;
+	const result = assign(requisitos, selectedCourses); // Use selectedCourses here
+	mapping = result.mapping;
+	credits = result.credits;
+	unused = result.unused;
 
-	$: {
-		const result = assign(requisitos, courses);
-		mapping = result.mapping;
-		credits = result.credits;
-		unused = result.unused;
-	}
+	// Update selected courses when the child component sends an event
+	const handleUpdate = (event) => {
+		if (JSON.stringify(event.detail) != JSON.stringify(selectedCourses)) {
+			selectedCourses = event.detail;
+			const result = assign(requisitos, selectedCourses); // Use selectedCourses here
+			mapping = result.mapping;
+			credits = result.credits;
+			unused = result.unused;
+			console.log('Updated selected courses');
+		}
+	};
 </script>
 
 <p class="text-3xl font-bold">Revisión de Carpeta</p>
-<DataTable bind:courses />
+
+<!-- Listen for the update event -->
+<DataTable courses={data.courses} on:update={handleUpdate} />
+
 <!-- Display total credits -->
 <div class="my-6">
 	<p class="text-lg font-semibold">Total de créditos: {credits}</p>
 </div>
+
 {#each requisitos as requisito, i (i)}
 	<RequisiteTable {requisito} {mapping} />
 {/each}

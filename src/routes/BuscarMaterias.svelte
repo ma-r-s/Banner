@@ -8,14 +8,20 @@
 	} from 'svelte-headless-table/plugins';
 	import * as Table from '$lib/components/ui/table';
 	import { readable } from 'svelte/store';
-	import cartelera from '$lib/data/cartelera.json';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import ChevronDown from 'lucide-svelte/icons/chevron-down';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import DataTableCheckbox from './Checkbox.svelte';
+	import { createEventDispatcher } from 'svelte';
 
-	const table = createTable(readable(cartelera), {
+	export let courses;
+
+	// Create a dispatcher to send events to the parent
+	const dispatch = createEventDispatcher();
+
+	// Initialize table with the courses data from the database
+	const table = createTable(readable(courses), {
 		page: addPagination(),
 		filter: addTableFilter({
 			fn: ({ filterValue, value }) => value.toLowerCase().includes(filterValue.toLowerCase())
@@ -23,9 +29,10 @@
 		hide: addHiddenColumns(),
 		select: addSelectedRows()
 	});
+
 	const columns = table.createColumns([
 		table.column({
-			accessor: (item) => item.nombre,
+			accessor: 'id',
 			header: (_, { pluginStates }) => {
 				const { allPageRowsSelected } = pluginStates.select;
 				return createRender(DataTableCheckbox, {
@@ -59,10 +66,6 @@
 			}
 		}),
 		table.column({
-			accessor: 'departamento',
-			header: 'Departamento'
-		}),
-		table.column({
 			accessor: 'nivel',
 			header: 'Nivel'
 		})
@@ -76,25 +79,22 @@
 	const { selectedDataIds } = pluginStates.select;
 	const ids = flatColumns.map((col) => col.id);
 	let hideForId = Object.fromEntries(
-		ids.map((id) => [id, !['departamento', 'nivel'].includes(id)])
+		ids.map((id) => [id, !['name', 'credits', 'level'].includes(id)])
 	);
 
-	$: $hiddenColumnIds = Object.entries(hideForId)
-		.filter(([, hide]) => !hide)
-		.map(([id]) => id);
-
-	const hidableCols = ['nombre', 'creditos', 'departamento', 'nivel'];
-
-	export let courses;
+	// When selected courses change, dispatch an event to notify the parent component
 	$: {
 		const selectedIndexes = Object.keys($selectedDataIds).filter(
 			(index) => $selectedDataIds[index]
 		);
-		let temp = selectedIndexes.map((index) => cartelera[index]);
-		if (JSON.stringify(courses) != JSON.stringify(temp)) {
-			courses = temp;
-		}
+		const selectedCourses = selectedIndexes.map((index) => courses[index]);
+		dispatch('update', selectedCourses); // Emit the selected courses
 	}
+
+	$: $hiddenColumnIds = Object.entries(hideForId)
+		.filter(([, hide]) => !hide)
+		.map(([id]) => id);
+	const hidableCols = ['name', 'credits', 'level'];
 </script>
 
 <div class="flex items-center py-4">
@@ -116,6 +116,7 @@
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 </div>
+
 <div class="rounded-md border">
 	<Table.Root {...$tableAttrs}>
 		<Table.Header>
@@ -150,10 +151,10 @@
 		</Table.Body>
 	</Table.Root>
 </div>
+
 <div class="flex items-center justify-end space-x-4 py-4">
 	<div class="flex-1 text-sm text-muted-foreground">
-		{Object.keys($selectedDataIds).length} of{' '}
-		{$rows.length} cursos elegidos.
+		{Object.keys($selectedDataIds).length} of {$rows.length} cursos elegidos.
 	</div>
 	<Button
 		variant="outline"

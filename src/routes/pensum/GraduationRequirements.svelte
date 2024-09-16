@@ -74,7 +74,7 @@
 
 	<Dialog.Root bind:open>
 		<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-			Create New Requirement Group
+			Crear Grupo de Requisitos
 		</Dialog.Trigger>
 		<Dialog.Content class="sm:max-w-[425px]">
 			<Dialog.Header>
