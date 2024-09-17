@@ -77,23 +77,23 @@
 		</Dialog.Trigger>
 		<Dialog.Content class="sm:max-w-[425px]">
 			<Dialog.Header>
-				<Dialog.Title>Create Requirement Group</Dialog.Title>
+				<Dialog.Title>Crear Grupo de Requisitos</Dialog.Title>
 				<Dialog.Description>
-					Add a new requirement group by filling in the details below.
+					Añade un nuevo grupo de requisitos para el programa.
 				</Dialog.Description>
 			</Dialog.Header>
 			<div class="grid gap-4 py-4">
 				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="type" class="text-right">Group Type</Label>
+					<Label for="type" class="text-right">Nombre</Label>
 					<Input id="type" bind:value={newGroupType} class="col-span-3" placeholder="e.g., CBUs" />
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="description" class="text-right">Description</Label>
+					<Label for="description" class="text-right">Descripcion</Label>
 					<Input
 						id="description"
 						bind:value={newGroupDescription}
 						class="col-span-3"
-						placeholder="Description"
+						placeholder="e.g., Curso Básico Uniandino"
 					/>
 				</div>
 			</div>

@@ -19,7 +19,7 @@
 </script>
 
 <div class="mb-6 flex gap-4">
-	<p class="text-xl font-bold">Revisión de Carpeta</p>
+	<a href="/" class="text-xl font-bold">Revisión de Carpeta</a>
 	<div class="flex-grow"></div>
 
 	{#if !data.user}

@@ -42,7 +42,7 @@
 
 <!-- Display total credits -->
 <div class="my-6">
-	<p class="text-lg font-semibold">Total de créditos: {credits}</p>
+	<p class="text-lg font-semibold">Total de créditos usados: {credits}</p>
 </div>
 {#if requisitos}
 	{#each requisitos as requisito, i (i)}
