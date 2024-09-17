@@ -45,6 +45,7 @@
 <!-- Display total credits -->
 {#if requisitos?.length > 0}
 	<Separator class="my-4" />
+	<p class="my-4 text-lg font-semibold">Revisión de carpeta para {selectedProgram?.name}</p>
 	{#each requisitos as requisito, i (i)}
 		<RequisiteTable {requisito} {mapping} />
 	{/each}

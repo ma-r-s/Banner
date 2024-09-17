@@ -169,7 +169,7 @@
 						class="w-[200px] justify-between"
 					>
 						{selectedProgram
-							? filteredPrograms.find((p) => p.id === selectedProgram)?.name
+							? filteredPrograms.find((p) => p.id === selectedProgram)?.code
 							: 'Elige un Programa'}
 						<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					</Button>
@@ -181,7 +181,7 @@
 						<Command.Group>
 							{#each filteredPrograms as program}
 								<Command.Item
-									value={program.name}
+									value={program.code}
 									onSelect={() => {
 										selectedProgram = program.id;
 										closeAndFocusTrigger(ids.trigger);
@@ -191,7 +191,7 @@
 									<Check
 										class={cn('mr-2 h-4 w-4', selectedProgram !== program.id && 'text-transparent')}
 									/>
-									{program.name}
+									{program.code}
 								</Command.Item>
 							{/each}
 						</Command.Group>
