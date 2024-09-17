@@ -48,16 +48,16 @@
 	{#each requisitos as requisito, i (i)}
 		<RequisiteTable {requisito} {mapping} />
 	{/each}
-{/if}
-<Separator class="my-4" />
+	<Separator class="my-4" />
 
-<!-- Display unused courses -->
-<p class="text-lg font-semibold">Total de créditos usados: {credits}</p>
-<div>
-	<p class="mt-6 text-lg font-semibold">Cursos no utilizados: {unused.length}</p>
-	<div class="flex flex-wrap">
-		{#each unused as course}
-			<div class="p-4">{course.codigo}</div>
-		{/each}
+	<!-- Display unused courses -->
+	<p class="text-lg font-semibold">Total de créditos usados: {credits}</p>
+	<div>
+		<p class="mt-6 text-lg font-semibold">Cursos no utilizados: {unused.length}</p>
+		<div class="flex flex-wrap">
+			{#each unused as course}
+				<div class="p-4">{course.codigo}</div>
+			{/each}
+		</div>
 	</div>
-</div>
+{/if}
