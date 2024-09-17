@@ -27,7 +27,6 @@
 			mapping = result.mapping;
 			credits = result.credits;
 			unused = result.unused;
-			console.log('Updated selected courses');
 		}
 	};
 </script>

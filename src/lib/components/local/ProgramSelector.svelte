@@ -52,7 +52,6 @@
 
 	// Emit the selected program
 	$: {
-		console.log('Emitting selected program', selectedProgram);
 		if (selectedProgram) {
 			const selectedProgramObj = programs.find((p) => p.id === selectedProgram);
 			dispatch('selectProgram', selectedProgramObj);
