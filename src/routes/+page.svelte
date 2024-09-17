@@ -1,4 +1,5 @@
 <script>
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import DataTable from './BuscarMaterias.svelte';
 	import RequisiteTable from './RequisiteTable.svelte';
 	import ProgramSelector from '$lib/components/local/ProgramSelector.svelte';
@@ -38,19 +39,20 @@
 	programs={data.programs}
 	on:selectProgram={handleProgramSelect}
 />
+<Separator class="my-4" />
 <DataTable courses={data.courses} on:update={handleUpdate} />
 
 <!-- Display total credits -->
-<div class="my-6">
-	<p class="text-lg font-semibold">Total de créditos usados: {credits}</p>
-</div>
-{#if requisitos}
+{#if requisitos?.length > 0}
+	<Separator class="my-4" />
 	{#each requisitos as requisito, i (i)}
 		<RequisiteTable {requisito} {mapping} />
 	{/each}
 {/if}
+<Separator class="my-4" />
 
 <!-- Display unused courses -->
+<p class="text-lg font-semibold">Total de créditos usados: {credits}</p>
 <div>
 	<p class="mt-6 text-lg font-semibold">Cursos no utilizados: {unused.length}</p>
 	<div class="flex flex-wrap">
