@@ -38,30 +38,3 @@ export const actions = {
 		redirect(303, '/');
 	}
 };
-
-export const load = async ({ locals }) => {
-	try {
-		// Fetch courses
-		const courses = await locals.pb.collection('courses').getFullList();
-
-		// Fetch all attributes
-		const attributes = await locals.pb.collection('attributes').getFullList();
-
-		// Create a map of attribute IDs to attribute names
-		const attributeMap = {};
-		attributes.forEach((attr) => {
-			attributeMap[attr.id] = attr.attribute; // Only store the 'attribute' field
-		});
-
-		// Enrich courses with just the attribute names
-		const enrichedCourses = courses.map((course) => {
-			const courseAttributes = course.attributes_ids.map((attrId) => attributeMap[attrId]);
-			return { ...course, attributes: courseAttributes }; // attributes is now an array of attribute names
-		});
-
-		return { courses: enrichedCourses };
-	} catch (err) {
-		console.log('Error fetching courses and attributes: ', err);
-		throw error(500, 'Failed to fetch data');
-	}
-};
