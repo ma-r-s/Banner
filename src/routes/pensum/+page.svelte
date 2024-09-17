@@ -1,5 +1,6 @@
 <script>
 	import ProgramSelector from '$lib/components/local/ProgramSelector.svelte';
+
 	import GraduationRequirements from './GraduationRequirements.svelte';
 
 	export let data;

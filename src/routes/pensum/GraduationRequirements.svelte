@@ -8,7 +8,6 @@
 	import RequisiteGroup from './RequisiteGroup.svelte';
 	import { toast } from 'svelte-sonner';
 
-	let requirementGroups = requirements;
 	let newGroupType = '';
 	let newGroupDescription = '';
 	let open;
@@ -19,7 +18,7 @@
 	// Function to add a new group
 	const addGroup = () => {
 		if (newGroupType && newGroupDescription) {
-			requirementGroups = [...requirementGroups, createGroup(newGroupType, newGroupDescription)];
+			requirements = [...requirements, createGroup(newGroupType, newGroupDescription)];
 			resetForm();
 		}
 		open = false;
@@ -33,7 +32,7 @@
 
 	// Function to remove a group by index
 	const deleteGroup = (index) => {
-		requirementGroups = requirementGroups.filter((_, i) => i !== index);
+		requirements = requirements.filter((_, i) => i !== index);
 	};
 
 	// Function to save requirements
@@ -43,7 +42,7 @@
 				method: 'POST',
 
 				body: JSON.stringify({
-					requirements: JSON.parse(JSON.stringify(requirementGroups), null, 2),
+					requirements: JSON.parse(JSON.stringify(requirements), null, 2),
 					programId
 				})
 			});
@@ -68,7 +67,7 @@
 <!-- Graduation Requirements Section -->
 <div class="space-y-4">
 	<!-- List of requirement groups -->
-	{#each requirementGroups as group, index}
+	{#each requirements as group, index}
 		<RequisiteGroup {group} on:delete={() => deleteGroup(index)} />
 	{/each}
 
