@@ -25,5 +25,8 @@
 
 <!-- Display Graduation Requirements -->
 {#if selectedProgramRequirements}
-	<GraduationRequirements requirements={selectedProgramRequirements} programId={selectedProgram} />
+	<GraduationRequirements
+		requirements={selectedProgramRequirements}
+		programId={selectedProgram?.id}
+	/>
 {/if}
