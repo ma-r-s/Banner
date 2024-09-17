@@ -87,7 +87,7 @@
 					<Command.Group>
 						{#each departments as department}
 							<Command.Item
-								value={department.id}
+								value={department.name}
 								onSelect={() => {
 									selectedDepartment = department.id;
 									cleanOld(); // Reset nivel and program when department changes
@@ -181,7 +181,7 @@
 						<Command.Group>
 							{#each filteredPrograms as program}
 								<Command.Item
-									value={program.id}
+									value={program.name}
 									onSelect={() => {
 										selectedProgram = program.id;
 										closeAndFocusTrigger(ids.trigger);
