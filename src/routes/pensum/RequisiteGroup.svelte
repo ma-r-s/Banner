@@ -16,7 +16,16 @@
 	// Function to handle requisite removal
 	const handleRemoveRequisite = (event) => {
 		const { index } = event.detail;
-		group.requisites = group.requisites.filter((_, i) => i !== index);
+		console.log('Removing requisite at index', index);
+		// Log the one being deleted
+		console.log(group.requisites);
+
+		// Use splice to directly modify the array in place
+		group.requisites.splice(index, 1);
+
+		// Log the updated requisites array
+		console.log(group.requisites);
+		group.requisites = [...group.requisites];
 	};
 
 	// Function to delete the entire group
