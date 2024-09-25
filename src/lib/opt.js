@@ -1,25 +1,38 @@
 import { solve } from 'yalps';
 
-// Utility function to build the Linear Programming (LP) model for "must" requirements
-function buildMustRequirements(mustRequirements, mustCourses) {
+/**
+ * @typedef {Object} Course
+ * @property {string} codigo - The course code.
+ * @property {string[]} attributes - The attributes or requirements the course satisfies.
+ * @property {number} creditos - The number of credits the course offers.
+ */
+
+/**
+ * Builds a linear programming model based on the given requirements and courses.
+ *
+ * @param {Object} requirements - The requirements with their respective limits.
+ * @param {Course[]} courses - The list of courses that can satisfy the requirements.
+ * @param {string} objective - The objective to maximize (e.g., 'creditos').
+ * @returns {Object} The LP model.
+ */
+function buildLPModel(requirements, courses, objective = 'creditos') {
 	const constraints = {};
 	const variables = {};
 
-	// Define constraints based on the "must" requirements
-	for (const requirement in mustRequirements) {
-		constraints[requirement] = { max: mustRequirements[requirement] };
+	// Define constraints based on the requirements
+	for (const [requirement, limit] of Object.entries(requirements)) {
+		constraints[requirement] = { max: limit };
 	}
 
-	// Define variables for each course that satisfies the "must" requirements
-	for (const course of mustCourses) {
+	// Define variables for each course that satisfies the requirements
+	courses.forEach((course) => {
 		const { codigo: courseCode, attributes, creditos: credits } = course;
 
 		attributes.forEach((requirement) => {
 			const variableName = `${courseCode}_${requirement}`;
 
-			// Initialize the variable if it doesn't exist
 			if (!variables[variableName]) {
-				variables[variableName] = { creditos: credits };
+				variables[variableName] = { [objective]: credits };
 
 				// Set coefficients for each requirement
 				attributes.forEach((req) => {
@@ -27,84 +40,44 @@ function buildMustRequirements(mustRequirements, mustCourses) {
 				});
 			}
 		});
-	}
 
-	// Add constraints to ensure each course is used at most once
-	mustCourses.forEach((course) => {
-		const { codigo: courseCode } = course;
-		const courseVariables = course.attributes.map((req) => `${course.codigo}_${req}`);
+		// Add constraints to ensure each course is used at most once
+		const oneUseConstraint = `one_use_${courseCode}`;
+		constraints[oneUseConstraint] = { max: 1 };
 
-		constraints[`one_use_${courseCode}`] = { max: 1 };
-
-		// Associate each course variable with the "one_use" constraint
-		courseVariables.forEach((variable) => {
-			variables[variable][`one_use_${courseCode}`] = 1;
+		attributes.forEach((req) => {
+			const variableName = `${courseCode}_${req}`;
+			variables[variableName][oneUseConstraint] = 1;
 		});
 	});
 
 	return {
 		direction: 'maximize', // Objective direction
-		objective: 'creditos', // Objective to maximize total credits
+		objective, // Objective to maximize
 		constraints, // Defined constraints
 		variables, // Defined variables
 		binaries: true // Variables are binary (0 or 1)
 	};
 }
 
-// Utility function to build the LP model for "bags" requirements
-function buildBagsRequirements(bagsRequirements, bagsCourses) {
-	const constraints = {};
-	const variables = {};
-
-	// Define constraints based on the "bags" requirements
-	for (const requirement in bagsRequirements) {
-		constraints[requirement] = { max: bagsRequirements[requirement] };
-	}
-
-	// Define variables for each course that satisfies the "bags" requirements
-	for (const course of bagsCourses) {
-		const { codigo: courseCode, attributes, creditos: credits } = course;
-
-		attributes.forEach((requirement) => {
-			const variableName = `${courseCode}_${requirement}`;
-
-			// Initialize the variable if it doesn't exist
-			if (!variables[variableName]) {
-				variables[variableName] = { creditos: credits };
-				variables[variableName][requirement] = credits; // Coefficient for the requirement
-			}
-		});
-	}
-
-	// Add constraints to ensure each course is used at most once
-	bagsCourses.forEach((course) => {
-		const { codigo: courseCode } = course;
-		const courseVariables = course.attributes.map((req) => `${course.codigo}_${req}`);
-
-		constraints[`one_use_${courseCode}`] = { max: 1 };
-
-		// Associate each course variable with the "one_use" constraint
-		courseVariables.forEach((variable) => {
-			variables[variable][`one_use_${courseCode}`] = 1;
-		});
-	});
-
-	return {
-		direction: 'maximize', // Objective direction
-		objective: 'creditos', // Objective to maximize total credits
-		constraints, // Defined constraints
-		variables, // Defined variables
-		binaries: true // Variables are binary (0 or 1)
-	};
-}
-
-// Function to handle "OR" requirements by selecting the best combination of courses
+/**
+ * Handles "OR" requirements by selecting the best combination of courses.
+ *
+ * @param {Object} requirements - The OR requirements with their options.
+ * @param {Course[]} availableCourses - The list of available courses.
+ * @returns {Object} The mapping of selected courses and unused courses.
+ */
 export function fillOrRequirements(requirements, availableCourses) {
 	const orMapping = {};
 	let totalOrCredits = 0;
 
 	// Validate inputs
-	if (!requirements || !Array.isArray(availableCourses) || availableCourses.length === 0) {
+	if (
+		!requirements ||
+		typeof requirements !== 'object' ||
+		!Array.isArray(availableCourses) ||
+		availableCourses.length === 0
+	) {
 		return { orCredits: 0, orMap: {}, orUnused: availableCourses };
 	}
 
@@ -139,8 +112,9 @@ export function fillOrRequirements(requirements, availableCourses) {
 			totalOrCredits += highestCredits;
 
 			// Remove the used courses from the available pool
+			const usedCourseCodes = bestOption.map((course) => course.codigo);
 			availableCourses = availableCourses.filter(
-				(course) => !bestOption.some((selected) => selected.codigo === course.codigo)
+				(course) => !usedCourseCodes.includes(course.codigo)
 			);
 		}
 	}
@@ -152,93 +126,85 @@ export function fillOrRequirements(requirements, availableCourses) {
 	};
 }
 
-// Function to handle "bags" requirements using linear programming
+/**
+ * Solves the linear programming model and maps the selected courses.
+ *
+ * @param {Object} model - The LP model to solve.
+ * @param {Course[]} courses - The list of available courses.
+ * @param {string} requirementType - The type of requirement (e.g., 'bags', 'must').
+ * @returns {Object} The mapping of selected courses and unused courses.
+ */
+function solveLPModel(model, courses, requirementType) {
+	const solution = solve(model);
+
+	const mapping = {};
+	const selectedCourses = new Set();
+	let totalCredits = 0;
+
+	// Initialize mapping for each requirement
+	for (const req in model.constraints) {
+		if (!req.startsWith('one_use_')) {
+			mapping[req] = [];
+		}
+	}
+
+	// Process the solution if it's optimal or feasible
+	if (['optimal', 'feasible'].includes(solution.status)) {
+		solution.variables.forEach(([variable, value]) => {
+			if (value === 1) {
+				const [courseCode, requirement] = variable.split('_');
+				const course = courses.find((c) => c.codigo === courseCode);
+
+				if (course && mapping[requirement]) {
+					mapping[requirement].push({ codigo: course.codigo, creditos: course.creditos });
+					selectedCourses.add(course.codigo);
+					totalCredits += course.creditos;
+				}
+			}
+		});
+	}
+
+	// Identify unused courses after selection
+	const unusedCourses = courses.filter((course) => !selectedCourses.has(course.codigo));
+
+	return {
+		[`${requirementType}Credits`]: totalCredits,
+		[`${requirementType}Map`]: mapping,
+		[`${requirementType}Unused`]: unusedCourses
+	};
+}
+
+/**
+ * Handles "bags" requirements using linear programming.
+ *
+ * @param {Object} reqs - The "bags" requirements.
+ * @param {Course[]} courses - The list of available courses.
+ * @returns {Object} The mapping of selected courses and unused courses.
+ */
 export function fillBagsRequirements(reqs, courses) {
-	// Build the LP model for "bags" requirements
-	const bagsModel = buildBagsRequirements(reqs, courses);
-
-	// Solve the LP model using YALPS
-	const solution = solve(bagsModel);
-
-	const bagsMapping = {};
-	const selectedCourses = [];
-	let totalBagsCredits = 0;
-
-	// Initialize mapping for each "bags" requirement
-	for (const req in reqs) {
-		bagsMapping[req] = [];
-	}
-
-	// Process the solution if it's optimal or feasible
-	if (solution.status === 'optimal' || solution.status === 'feasible') {
-		solution.variables.forEach(([variable, value]) => {
-			if (value === 1) {
-				const [courseCode, requirement] = variable.split('_');
-				const course = courses.find((c) => c.codigo === courseCode);
-
-				if (course && bagsMapping[requirement]) {
-					bagsMapping[requirement].push({ codigo: course.codigo, creditos: course.creditos });
-					selectedCourses.push(course.codigo);
-					totalBagsCredits += course.creditos;
-				}
-			}
-		});
-	}
-
-	// Identify unused courses after selecting for "bags" requirements
-	const unusedCourses = courses.filter((course) => !selectedCourses.includes(course.codigo));
-
-	return {
-		bagsCredits: totalBagsCredits,
-		bagsMap: bagsMapping,
-		bagsUnused: unusedCourses
-	};
+	const bagsModel = buildLPModel(reqs, courses, 'creditos');
+	return solveLPModel(bagsModel, courses, 'bags');
 }
 
-// Function to handle "must" requirements using linear programming
+/**
+ * Handles "must" requirements using linear programming.
+ *
+ * @param {Object} reqs - The "must" requirements.
+ * @param {Course[]} courses - The list of available courses.
+ * @returns {Object} The mapping of selected courses and unused courses.
+ */
 export function fillMustRequirements(reqs, courses) {
-	// Build the LP model for "must" requirements
-	const mustModel = buildMustRequirements(reqs, courses);
-
-	// Solve the LP model using YALPS
-	const solution = solve(mustModel);
-
-	const mustMapping = {};
-	const selectedCourses = [];
-	let totalMustCredits = 0;
-
-	// Initialize mapping for each "must" requirement
-	for (const req in reqs) {
-		mustMapping[req] = [];
-	}
-
-	// Process the solution if it's optimal or feasible
-	if (solution.status === 'optimal' || solution.status === 'feasible') {
-		solution.variables.forEach(([variable, value]) => {
-			if (value === 1) {
-				const [courseCode, requirement] = variable.split('_');
-				const course = courses.find((c) => c.codigo === courseCode);
-
-				if (course && mustMapping[requirement]) {
-					mustMapping[requirement].push({ codigo: course.codigo, creditos: course.creditos });
-					selectedCourses.push(course.codigo);
-					totalMustCredits += course.creditos;
-				}
-			}
-		});
-	}
-
-	// Identify unused courses after selecting for "must" requirements
-	const unusedCourses = courses.filter((course) => !selectedCourses.includes(course.codigo));
-
-	return {
-		mustCredits: totalMustCredits,
-		mustMap: mustMapping,
-		mustUnused: unusedCourses
-	};
+	const mustModel = buildLPModel(reqs, courses, 'creditos');
+	return solveLPModel(mustModel, courses, 'must');
 }
 
-// Main function to assign courses based on requirements and available courses
+/**
+ * Assigns courses based on the given requirements and available courses.
+ *
+ * @param {Object[]} requirements - The list of requirement sections.
+ * @param {Course[]} availableCourses - The list of available courses.
+ * @returns {Object} The assignment result including credits, mapping, and unused courses.
+ */
 export function assign(requirements, availableCourses) {
 	// Validate input types
 	if (!Array.isArray(requirements) || !Array.isArray(availableCourses)) {
@@ -279,7 +245,12 @@ export function assign(requirements, availableCourses) {
 	};
 }
 
-// Helper function to restructure the requirements into categorized groups
+/**
+ * Restructures the requirements into categorized groups: OR, bags, and must.
+ *
+ * @param {Object[]} requirements - The list of requirement sections.
+ * @returns {Object} The structured requirements.
+ */
 function restructureRequirements(requirements) {
 	const structuredReqs = {
 		or: {},
@@ -289,6 +260,10 @@ function restructureRequirements(requirements) {
 
 	// Iterate over each section of requirements
 	requirements.forEach((section) => {
+		if (!section.requisites || !Array.isArray(section.requisites)) {
+			return;
+		}
+
 		section.requisites.forEach((req) => {
 			const { rule, data } = req;
 
@@ -298,8 +273,17 @@ function restructureRequirements(requirements) {
 			}
 
 			// Merge the data into the corresponding rule category
-			Object.keys(data).forEach((key) => {
-				structuredReqs[rule][key] = data[key];
+			Object.entries(data).forEach(([key, value]) => {
+				if (structuredReqs[rule][key]) {
+					// If the key already exists, merge the arrays or handle accordingly
+					if (Array.isArray(structuredReqs[rule][key]) && Array.isArray(value)) {
+						structuredReqs[rule][key] = [...structuredReqs[rule][key], ...value];
+					} else {
+						structuredReqs[rule][key] = value;
+					}
+				} else {
+					structuredReqs[rule][key] = value;
+				}
 			});
 		});
 	});
