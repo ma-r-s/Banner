@@ -24,7 +24,7 @@
 
 	{#if !data.user}
 		<Button class="hidden sm:block" variant="outline" on:click={() => openDialog('login')}
-			>Iniciar sesíon</Button
+			>Iniciar sesion</Button
 		>
 		<Button class="hidden sm:block" variant="outline" on:click={() => openDialog('register')}
 			>Registrarse</Button
@@ -56,7 +56,7 @@
 					{#if currentForm === 'login'}
 						<p>¿No tienes cuenta? Regístrate</p>
 					{:else}
-						<p>¿Ya tienes cuenta? Inicia sesíon</p>
+						<p>¿Ya tienes cuenta? Inicia sesion</p>
 					{/if}
 				</button>
 			</Dialog.Footer>

@@ -25,7 +25,7 @@
 </script>
 
 <Dialog.Header>
-	<Dialog.Title>Inicia sesíon</Dialog.Title>
+	<Dialog.Title>Inicia sesion</Dialog.Title>
 </Dialog.Header>
 <form method="POST" action="?/login" class="space-y-4" use:enhance>
 	<Form.Field {form} name="email">
@@ -55,7 +55,7 @@
 		{#if $delayed}
 			<LoaderCircle class="size-4 animate-spin" />
 		{:else}
-			Iniciar sesíon
+			Iniciar sesion
 		{/if}
 	</Form.Button>
 	<!-- <SuperDebug  data={$formData} /> -->
